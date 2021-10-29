@@ -1,0 +1,11 @@
+<html>
+    <head>
+        <title>註冊帳號資料</title>
+    </head>
+    <body>
+        <form action="/post/" method="POST" name="from1">
+            {% csrf_token %}
+            <div>請輸入帳號 :<input type ="text" name="username"/>
+        </form>
+    </body>
+</html>
