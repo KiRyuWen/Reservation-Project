@@ -88,6 +88,16 @@ def rigister(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             form.save()
+            #
+            post_user = request.POST.get('username')
+            post_psw = request.POST.get('password1')
+            post_email = request.POST.get('email')
+            customer_list = []
+            customer_obj = customer(
+                cName=post_user, cEmail=post_email, cPassword=post_psw)
+            customer_list.append(customer_obj)
+            customer.objects.bulk_create(customer_list)
+            #
             return redirect('/login/')  # 重新導向到登入畫面
     context = {
         'form': form

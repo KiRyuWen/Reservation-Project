@@ -46,7 +46,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV='/home/wenyi/change_dir_from_windows/example_se_from_Weiting/environment_3_8_2'
+VIRTUAL_ENV='/home/wenyi/change_dir_from_windows/create_new_git/Reservation-Project/environment_3_8_2'
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

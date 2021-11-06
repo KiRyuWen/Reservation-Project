@@ -1,45 +1,233 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>首頁</title>
-</head>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>註冊</title>
+        <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="../static/js/jquery-1.12.4.min.js"></script>
+        <script src="../static/js/jquery.cookie.js"></script>
+        <script src="../static/datetimepicker/bootstrap-datetimepicker.min.js"></script>
+        <script src="../static/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+
+        <link rel="stylesheet" href="../static/myIndex.css">
+
+        <style type="text/css">
+            .active {
+                background-color: green !important;
+                color: white;
+            }
+
+            .another_active {
+                background-color: #336699;
+                color: white;
+            }
+
+            .td_active {
+                background-color: lightblue;
+            }
+        </style>
+    </head>
+
+
+
 <body>
     <h2>Reservation Room system!!</h2>
     {% if request.user.is_authenticated %}
-    	歡迎光臨:{{name}}
-        {% if request.user.is_staff or request.user.is_superuser %}
-            權限: manager
-        {% else %}
-            權限: member
-        {% endif %}
-        <p><a href="/logout/">登出</a></p>
+    歡迎光臨:{{name}}
+    {% if request.user.is_staff or request.user.is_superuser %}
+    權限: manager
     {% else %}
-        <p>您尚未登入喔~</p>
-        權限: guest
-        <a href="/login/">登入</a>
-        <a href="/register/">註冊</a>
+    權限: member
+    {% endif %}
+    <p><a href="/logout/">登出</a></p>
+    {% else %}
+    <p>您尚未登入喔~</p>
+    權限: guest
+    <a href="/login/">登入</a>
+    <a href="/register/">註冊</a>
     {% endif %}
     <span style="color:red">{{message}}</span>
 
 
-    
-<table class="table table-bordered table-striped">
-    <thead>
-    <tr>
-        <th>会议室时间</th>
-        {% for time in time_choice %}
-            <th>{{ time.1 }}</th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <tbody>
-    {{ htmls|safe }}
 
-    </tbody>
+    <section class="container-fluid">
+        <!-- <h1>Room Reservation Welcome! {{ request.user.username }}</h1> -->
+        <div class="row align-items-center">
+            <div class="col-lg-3 align-self-start">
+                <div class="calender">
 
-</table>
-<button class="btn btn-success pull-right keep">保存</button>
+                    <div id="datetimepicker11"></div>
 
+
+                </div>
+
+                <button class="btn btn-success  keep">保存</button>
+                <button class="btn btn-warning selectRoom">編輯</button>
+            </div>
+            <div class="col-lg-9 ">
+                <table class="table table-bordered ">
+                    <thead>
+                        <tr>
+                            <th>Room Time</th>
+                            {% for time in time_choice %}
+                            <th>{{ time.1 }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ htmls|safe }}
+
+                    </tbody>
+
+                </table>
+
+
+            </div>
+        </div>
+
+
+
+
+    </section>
+
+    <script type="text/javascript">
+
+        // 日期格式化方法
+        Date.prototype.yuan = function (fmt) { //author: meizz
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+
+
+
+
+
+        // room_id 为键，time_id 为值  {1：[4,5],2:[4,] }   {3:[9,10]}
+        var POST_DATA = {
+            "ADD": {},
+            "DEL": {}
+        };
+
+        // 为td 绑定 单击事件
+        function BindTd() {
+            $('.item').click(function () {
+
+                var room_id = $(this).attr('room_id');
+                var time_id = $(this).attr('time_id');
+
+                //取消预订
+                if ($(this).hasClass('active')) {
+                    $(this).removeClass('active').empty();
+                    if (POST_DATA.DEL[room_id]) {
+                        POST_DATA.DEL[room_id].push(time_id)
+                    } else {
+                        POST_DATA.DEL[room_id] = [time_id]
+                    }
+
+                }
+                //临时取消预订
+                else if ($(this).hasClass('td_active')) {
+                    $(this).removeClass('td_active');
+                    { POST_DATA.ADD[room_id].pop() }  //这个是删除最后一个 在这不对！
+                    // 删除指定的 元素
+                    POST_DATA.ADD[room_id].splice(POST_DATA.ADD[room_id].indexOf(time_id), 1)
+
+                } else { //添加预订
+                    $(this).addClass('td_active');
+                    if (POST_DATA.ADD[room_id]) {
+                        POST_DATA.ADD[room_id].push(time_id)
+                    } else {
+                        POST_DATA.ADD[room_id] = [time_id];
+                    }
+
+                }
+
+            })
+        }
+        BindTd();
+
+        let isLogin = false;
+
+
+        // 日期
+        if (location.search.slice(11)) {
+            CHOOSE_DATE = location.search.slice(11)
+        }
+        else {
+            CHOOSE_DATE = new Date().yuan('yyyy-MM-dd');
+        }
+
+        //发送 ajax
+        $('.keep').click(function () {
+            $.ajax({
+                url: '/book/',
+                type: 'post',
+                headers: { "X-CSRFToken": $.cookie('csrftoken') },
+                data: {
+                    choose_date: CHOOSE_DATE,
+                    post_data: JSON.stringify(POST_DATA)
+                },
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                    if (data.state) {
+                        //预订成功
+                        location.href = ''
+                    } else {
+                        alert('预订的房间已经被预订');
+                        location.href = ""
+                    }
+                }
+
+            })
+        });
+
+        // 日历插件
+        $('#datetimepicker11').datetimepicker({
+            minView: "month",
+            language: "zh-CN",
+            sideBySide: true,
+            format: 'yyyy-mm-dd',
+            startDate: new Date(),
+            bootcssVer: 3,
+            autoclose: true
+        }).on('changeDate', book_query);
+
+
+        function book_query(e) {
+            CHOOSE_DATE = e.date.yuan("yyyy-MM-dd");
+            location.href = "/index/?book_date=" + CHOOSE_DATE;
+        }
+
+    </script>
+    {% block top%}
+    <script>
+        //huge step let a = 100;
+        // {% if request.user.is_authenticated %}
+        // a = 200;
+        // {% endif %}
+    </script>
+    {% endblock %}
+    <script src="../static/index.js"></script>
 </body>
+
 </html>

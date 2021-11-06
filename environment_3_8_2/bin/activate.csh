@@ -10,7 +10,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV '/home/wenyi/change_dir_from_windows/example_se_from_Weiting/environment_3_8_2'
+setenv VIRTUAL_ENV '/home/wenyi/change_dir_from_windows/create_new_git/Reservation-Project/environment_3_8_2'
 
 set _OLD_VIRTUAL_PATH="$PATH:q"
 setenv PATH "$VIRTUAL_ENV:q/bin:$PATH:q"

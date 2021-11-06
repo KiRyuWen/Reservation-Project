@@ -1,24 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>登入</title>
-    </head>
-    <body>
-        <form action="/register/" method="post" name="form1">
-            {% csrf_token %}
-            <label for="username">用戶名稱:</label>
-            <input type="text" name="username" value="" id="username"> <br/>
-            <label for="email">電子郵件:</label>
-            <input type="text" name="email" value="" id="email"> <br/>
-            <label for="password1">用戶密碼:</label>
-            <input type="password" name="password1" value="" id="password1"> <br/>
-            <label for="passwor2d">密碼確認:</label>
-            <input type="password" name="password2" value="" id="password2"> <br/>
-            <input type="submit" value="註冊" />
-        </form>
-        <footer class="card-footer">
-            <div class="back"><a href="/login/">login</a> </div>
-        </footer>
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <title>註冊</title>
+    <link rel="stylesheet" href="../static/register.css">
+</head>
+
+<body>
+    <div class="signup">
+        <div id="container2">
+            <div class="signup">
+
+                <h3>註冊您的帳號</h3>
+
+                <form action="" method="post">
+                    <input type="text" id="username" name="username" placeholder="帳號名稱" value=""><br />
+                    <div class="tab"></div>
+                    <input type="email" id="email" name="email" placeholder="電子信箱" value=""><br />
+                    <div class="tab"></div>
+                    <input type="password" id="password1" name="password1" placeholder="密碼" value=""><br />
+                    <div class="tab"></div>
+                    <input type="password" id="password2" name="password2" placeholder="確認密碼" value=""><br />
+                    <div class="tab"></div>
+                    <input type="submit" value="註冊" class="submit">
+                </form>
+                <footer class="card-footer">
+                    <div class="back"><a href="/login/">login</a> </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+</body>
+
 </html>
