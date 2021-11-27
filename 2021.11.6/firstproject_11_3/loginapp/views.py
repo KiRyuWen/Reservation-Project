@@ -1,15 +1,43 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate
 from django.contrib import auth
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 
 from loginapp.models import customer, Book, Room
 import datetime
+
+from django.core.serializers import serialize
+import json
+
+
 # Create your views here.
 
+
+
+
+def checkJs(request):
+    data = {
+        'hello':123,
+        'Haha':321
+    }
+
+    userList=customer.objects.all()   
+    customerName=[]
+    for object in userList:
+        customerName.append(object.cName)
+    print(customerName)
+
+    toSend={
+        "users":customerName
+    }
+
+
+    return JsonResponse(toSend)
+def edit(request):
+    return render(request,"edit.html",locals())
 
 def listall(request):
     customers = customer.objects.all().order_by('cName')
