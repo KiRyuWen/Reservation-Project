@@ -48,8 +48,7 @@
             <label>參與成員</label>
             <div class="tab"></div>
             <div id="memberGroup">
-                <input type="checkbox" name="race" value="a">
-                <label for="race">AAArace</label>
+
             </div>
             <!-- <select name="members" id="member">
                 <option value="" selected disabled>查看所有成員</option>
@@ -65,6 +64,11 @@
     </div>
 
     <script type="text/javascript">
+        $.post({
+            url: '/renderEdit',
+        }, function (data) {
+            console.log(data)
+        });
         $.post({
             url: '/checkJs',
         }, function (data) {
@@ -90,11 +94,7 @@
 
         }
         );
-        $.post({
-            url: 'edit/',
-        }, function (data) {
-            console.log(data)
-        });
+
 
     </script>
 </body>

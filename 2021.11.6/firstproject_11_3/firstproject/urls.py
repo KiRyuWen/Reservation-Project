@@ -19,7 +19,11 @@ from loginapp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+
+    path('renderEdit',views.renderEdit),
     path('edit/',views.edit),
+    
     path("listall",views.listall),
     path('', views.index),
     path('index/', views.index),

@@ -36,8 +36,13 @@ def checkJs(request):
 
 
     return JsonResponse(toSend)
-def edit(request):
+
+
+def renderEdit(request):
     return render(request,"edit.html",locals())
+def edit(request):
+    return redirect('/edit/')
+
 
 def listall(request):
     customers = customer.objects.all().order_by('cName')

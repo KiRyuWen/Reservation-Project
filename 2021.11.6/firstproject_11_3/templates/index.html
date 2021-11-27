@@ -179,7 +179,7 @@
         //发送 ajax
         $('.keep').click(function () {
             $.ajax({
-                url: '/book/',
+                url: 'edit/',
                 type: 'post',
                 headers: { "X-CSRFToken": $.cookie('csrftoken') },
                 data: {
@@ -189,6 +189,7 @@
                 dataType: "json",
                 success: function (data) {
                     console.log(data);
+                    console.log("Enter edit")
                     if (data.state) {
                         //预订成功
                         location.href = ''
