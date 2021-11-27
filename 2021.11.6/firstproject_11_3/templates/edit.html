@@ -47,7 +47,7 @@
             <div class="tab"></div>
             <label>參與成員</label>
             <div class="tab"></div>
-            <div class="memeberGroup">
+            <div id="memberGroup">
                 <input type="checkbox" name="race" value="a">
                 <label for="race">AAArace</label>
             </div>
@@ -72,11 +72,20 @@
             console.log(typeof (data))
             console.log(data);
             const users = data.users
+            let memberGroup = document.getElementById('memberGroup');
             for (userName of users) {
-                let d = document.getElementById('Users');
-                let p = document.createElement('p');
-                p.append(userName)
-                d.appendChild(p)
+                let input = document.createElement('input');
+                input.type = "checkbox";
+                input.id = userName;
+                input.name = userName;
+                input.value = userName;
+                let label = document.createElement('label');
+                label.setAttribute('for', userName);
+                label.append(userName)
+                memberGroup.appendChild(input);
+                memberGroup.appendChild(label);
+                let br = document.createElement('br');
+                memberGroup.appendChild(br);
             }
 
         }

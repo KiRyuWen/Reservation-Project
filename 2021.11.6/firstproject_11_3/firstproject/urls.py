@@ -26,6 +26,7 @@ urlpatterns = [
     path('login/', views.login),
     path('logout/', views.logout),
     path('register/', views.rigister),
+    path('checkJs',views.checkJs),
     # path('adduser/',views.adduser),
 
     # path('post/',views.post),
