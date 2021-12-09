@@ -1,0 +1,80 @@
+* {
+  font-family: 微軟正黑體;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('https://getwallpapers.com/wallpaper/full/d/f/7/648046.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  max-width: 97vw;
+  max-height: 97vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#username,
+#password1,
+h3,
+#password2,
+#email {
+  width: 200px;
+  height: 20px;
+  margin: 10px;
+  color: #df5334;
+}
+
+#container2 {
+  margin: 50px;
+  padding: 10px;
+  width: 230px;
+  height: 300px;
+  background-color: white;
+  border-radius: 5px;
+  border-top: 10px solid orangered;
+  box-shadow: 0 0px 70px rgba(0, 0, 0, 0.1);
+
+  /*定位對齊*/
+  position: relative;
+  margin: auto;
+  top: -50px;
+  text-align: center;
+}
+
+.system_name {
+  /*定位對齊*/
+  position: relative;
+  margin: auto;
+  top: 100px;
+  text-align: center;
+}
+
+.submit {
+  color: white;
+  background: #df5334;
+  width: 200px;
+  height: 30px;
+  margin: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 0px;
+}
+
+.submit:hover {
+  background: #db6937;
+}
+
+#container2 {
+  visibility: visible;
+  height: 350px;
+}
+
+input {
+  padding: 5px;
+  border: none;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+}

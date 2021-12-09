@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit</title>
+    <script src="../static/js/jquery-1.12.4.min.js"></script>
+    <script src="../static/js/jquery.cookie.js"></script>
+
+    <link rel="stylesheet" href="../static/edit.css">
+
+</head>
+
+<body>
+    <div id="container">
+        <button id="">X</button>
+        <div class="tab"></div>
+        <select name="rooms">
+            <option value="" selected disabled>選擇房間</option>
+            <option value="room1">room1</option>
+            <option value="room2">room2</option>
+            <option value="room3">room3</option>
+            <option value="room4">room4</option>
+            <option value="room5">room5</option>
+            <option value="room6">room6</option>
+        </select>
+        <select name="meetings">
+            <option value="" selected disabled>選擇會議</option>
+            <option value="meeting1">meeting1</option>
+            <option value="meeting2">meeting2</option>
+            <option value="meeting3">meeting3</option>
+            <option value="meeting4">meeting4</option>
+            <option value="meeting5">meeting5</option>
+            <option value="meeting6">meeting6</option>
+        </select>
+        <form action="" method="post">
+            <label>會議名稱</label>
+            <div class="tab"></div>
+            <input type="text" id="meetingName" name="meetingName" placeholder="會議名稱"><br />
+            <div class="tab"></div>
+            <label>會議資訊</label>
+            <div class="tab"></div>
+            <textarea id="meetingInfo" name="meetingInfo" rows="8" cols="40" placeholder="會議資訊">
+</textarea>
+            <div class="tab"></div>
+            <label>參與成員</label>
+            <div class="tab"></div>
+            <div id="memberGroup">
+
+            </div>
+            <!-- <select name="members" id="member">
+                <option value="" selected disabled>查看所有成員</option>
+                <option value="meeting1" disabled selected>Amy</option>
+                <option value="meeting2" disabled>John</option>
+                <option value="meeting3" disabled>Cindy</option>
+            </select> -->
+            <div class="tab"></div>
+            <input type="submit" value="刪除" class="delete">
+            <input type="submit" value="儲存" class="save">
+        </form>
+
+    </div>
+
+    <script type="text/javascript">
+        $.post({
+            url: '/renderEdit',
+        }, function (data) {
+            console.log(data)
+        });
+        $.post({
+            url: '/checkJs',
+        }, function (data) {
+
+            console.log(typeof (data))
+            console.log(data);
+            const users = data.users
+            let memberGroup = document.getElementById('memberGroup');
+            for (userName of users) {
+                let input = document.createElement('input');
+                input.type = "checkbox";
+                input.id = userName;
+                input.name = userName;
+                input.value = userName;
+                let label = document.createElement('label');
+                label.setAttribute('for', userName);
+                label.append(userName)
+                memberGroup.appendChild(input);
+                memberGroup.appendChild(label);
+                let br = document.createElement('br');
+                memberGroup.appendChild(br);
+            }
+
+        }
+        );
+
+
+    </script>
+</body>
+
+</html>

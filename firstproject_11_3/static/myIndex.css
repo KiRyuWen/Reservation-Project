@@ -1,0 +1,25 @@
+
+
+.row{
+    /* height: 100vh; */
+    margin-top: 10%;
+}
+
+.datepicker,
+.table-condensed {
+
+    width: 90%;
+    /* height: 220px; */
+    font-size: x-small; 
+}
+
+div.col-lg-9  td{
+    height:100px;
+}
+button{
+    width:90%;
+    
+}
+.btn{
+    margin-top: 10px;
+}
