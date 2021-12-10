@@ -17,7 +17,17 @@ import json
 
 def listall(request):
     customers = customer.objects.all().order_by('cName')
-    return render(request, "listall.html", locals())
+    
+    c =[]
+
+    for obj in customers:
+        c.append(obj.cName)
+
+    toSend ={
+        "users":c
+    }    
+    #return render(request, "listall.html", locals())
+    return JsonResponse(toSend)
 
 
 def index(request):
@@ -139,7 +149,7 @@ def book(request):
 
     post_data = json.loads(request.POST.get('post_data'))
     choose_date = request.POST.get("choose_date")
-
+    print(post_data)
     # 用於檢視狀態 供前端檢視 並檢查
     res = {"state": True, "msg": None}
 

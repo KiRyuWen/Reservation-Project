@@ -61,7 +61,7 @@
     <section class="container-fluid">
         <!-- <h1>Room Reservation Welcome! {{ request.user.username }}</h1> -->
         <div class="row align-items-center">
-            <div class="col-lg-3 align-self-start">
+            <div id="memberGroup" class="col-lg-3 align-self-start">
                 <div class="calender">
 
                     <div id="datetimepicker11"></div>
@@ -92,7 +92,11 @@
 
             </div>
         </div>
+        <div class="row align-items-center">
+            <div class="col-lg-3 ">
 
+            </div>
+        </div>
 
 
 
@@ -117,6 +121,55 @@
             return fmt;
         };
 
+        $.post({
+            url: '/listall',
+        }, function (data) {
+
+            console.log(typeof (data))
+            console.log(data);
+            const users = data.users
+            let memberGroup = document.getElementById('memberGroup');
+            let b = document.createElement('br');
+            memberGroup.appendChild(b);
+            for (userName of users) {
+                let input = document.createElement('input');
+                input.classList.add('user');
+                input.type = "checkbox";
+                input.id = userName;
+                input.name = userName;
+                input.value = userName;
+                let label = document.createElement('label');
+                label.setAttribute('for', userName);
+                label.append(userName)
+                memberGroup.appendChild(input);
+                memberGroup.appendChild(label);
+                let br = document.createElement('br');
+                memberGroup.appendChild(br);
+            }
+            BindUser()
+
+        }
+        );
+        function BindUser() {
+
+            $('.user').click(function () {
+                $(this).at
+                var isCheck = $(this).prop('checked');
+                let userName = $(this).attr('id');
+                if (isCheck) {
+                    POST_DATA.MEMBERS.push(userName);
+                }
+                else {
+                    if (POST_DATA.MEMBERS.indexOf(userName) != (-1)) {
+                        POST_DATA.MEMBERS.splice(POST_DATA.MEMBERS.indexOf(userName), 1);
+                    }
+                }
+                // console.clear()
+                // for (let i = 0; i < POST_DATA.MEMBERS.length; ++i) {
+                //     console.log(POST_DATA.MEMBERS[i]);
+                // }
+            })
+        }
 
 
 
@@ -125,7 +178,7 @@
         var POST_DATA = {
             "SELECTED": {},
             "DEL": {},
-            "MEMBERS":{}
+            "MEMBERS": []
         };
 
         // 为td 绑定 单击事件
@@ -151,7 +204,7 @@
                     { POST_DATA.SELECTED[room_id].pop() }  //这个是删除最后一个 在这不对！
                     // 删除指定的 元素
                     POST_DATA.SELECTED[room_id].splice(POST_DATA.SELECTED[room_id].indexOf(time_id), 1)
-                    
+
                 } else { //添加预订
                     $(this).addClass('td_active');
                     if (POST_DATA.SELECTED[room_id]) {
@@ -245,7 +298,7 @@
             location.href = "/index/?book_date=" + CHOOSE_DATE;
         }
 
-    
+
     </script>
     {% block top%}
     <script>

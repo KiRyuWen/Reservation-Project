@@ -69,31 +69,6 @@
         }, function (data) {
             console.log(data)
         });
-        $.post({
-            url: '/checkJs',
-        }, function (data) {
-
-            console.log(typeof (data))
-            console.log(data);
-            const users = data.users
-            let memberGroup = document.getElementById('memberGroup');
-            for (userName of users) {
-                let input = document.createElement('input');
-                input.type = "checkbox";
-                input.id = userName;
-                input.name = userName;
-                input.value = userName;
-                let label = document.createElement('label');
-                label.setAttribute('for', userName);
-                label.append(userName)
-                memberGroup.appendChild(input);
-                memberGroup.appendChild(label);
-                let br = document.createElement('br');
-                memberGroup.appendChild(br);
-            }
-
-        }
-        );
 
 
     </script>
