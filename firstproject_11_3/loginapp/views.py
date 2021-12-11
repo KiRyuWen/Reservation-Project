@@ -16,8 +16,8 @@ import json
 
 
 def listall(request):
-    customers = customer.objects.all().order_by('cName')
-
+    customers = customer.objects.all().order_by(
+        'cName').exclude(cName=request.user.username)
     c = []
 
     for obj in customers:
