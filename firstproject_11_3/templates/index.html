@@ -109,10 +109,10 @@
             var o = {
                 "M+": this.getMonth() + 1, //月份
                 "d+": this.getDate(), //日
-                "h+": this.getHours(), //小时
+                "h+": this.getHours(), //小時
                 "m+": this.getMinutes(), //分
                 "s+": this.getSeconds(), //秒
-                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季節
                 "S": this.getMilliseconds() //毫秒
             };
             if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
@@ -174,21 +174,21 @@
 
 
 
-        // room_id 为键，time_id 为值  {1：[4,5],2:[4,] }   {3:[9,10]}
+        // room_id 為索引，time_id 為值  {1：[4,5],2:[4,] }   {3:[9,10]}
         var POST_DATA = {
             "SELECTED": {},
             "DEL": {},
             "MEMBERS": []
         };
 
-        // 为td 绑定 单击事件
+        // 为td 绑定 單擊事件
         function BindTd() {
             $('.item').click(function () {
 
                 var room_id = $(this).attr('room_id');
                 var time_id = $(this).attr('time_id');
 
-                //取消预订
+                //取消预訂
                 if ($(this).hasClass('active')) {
                     $(this).removeClass('active').empty();
                     if (POST_DATA.DEL[room_id]) {
@@ -198,14 +198,14 @@
                     }
 
                 }
-                //临时取消预订
+                //臨時取消預定
                 else if ($(this).hasClass('td_active')) {
                     $(this).removeClass('td_active');
-                    { POST_DATA.SELECTED[room_id].pop() }  //这个是删除最后一个 在这不对！
+                    { POST_DATA.SELECTED[room_id].pop() }  //這個是删除最后一個 在這不對！
                     // 删除指定的 元素
                     POST_DATA.SELECTED[room_id].splice(POST_DATA.SELECTED[room_id].indexOf(time_id), 1)
 
-                } else { //添加预订
+                } else { //添加预訂
                     $(this).addClass('td_active');
                     if (POST_DATA.SELECTED[room_id]) {
                         POST_DATA.SELECTED[room_id].push(time_id)
@@ -245,7 +245,7 @@
                     console.log(data);
                     console.log("Enter book")
                     if (data.state) {
-                        //预订成功
+                        //预訂成功
                         location.href = ''
                     } else {
                         alert('您所選擇預定的房间已經其他人被預訂囉');
@@ -271,7 +271,7 @@
                     console.log(data);
                     console.log("Enter book")
                     if (data.state) {
-                        //预订成功
+                        //预訂成功
                         location.href = ''
                     } else {
                         alert('權限不足，非預定房間的host不得取消預定');
@@ -281,7 +281,7 @@
 
             })
         });
-        // 日历插件
+        // 日曆插件
         $('#datetimepicker11').datetimepicker({
             minView: "month",
             language: "zh-CN",

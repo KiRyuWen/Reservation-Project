@@ -17,16 +17,16 @@ import json
 
 def listall(request):
     customers = customer.objects.all().order_by('cName')
-    
-    c =[]
+
+    c = []
 
     for obj in customers:
         c.append(obj.cName)
 
-    toSend ={
-        "users":c
-    }    
-    #return render(request, "listall.html", locals())
+    toSend = {
+        "users": c
+    }
+    # return render(request, "listall.html", locals())
     return JsonResponse(toSend)
 
 
@@ -153,19 +153,36 @@ def book(request):
     # 用於檢視狀態 供前端檢視 並檢查
     res = {"state": True, "msg": None}
 
-    # 添加预订
+    # 添加预訂
     try:
         customers = customer.objects.all().order_by('cName')
         user_customer = customer.objects.filter(cName=request.user.username)[0]
         book_list = []
+
+        # 過濾出使用者名單
+        membersNameFilter = Q()
+        hasmembers = False
+        for _name in post_data["MEMBERS"]:
+            hasmembers = True
+            temp = Q()
+            temp.children.append(("cName", _name))
+            membersNameFilter.add(temp, "OR")
+        members = customers.filter(membersNameFilter)
+
+        # 判斷合法性 並 創建book class 加入後台
         for room_id, time_id_list in post_data["SELECTED"].items():
             for time_id in time_id_list:
                 # 房間 時間 日期 這三者 有單一性 若重複預定 會跳exception
-                book_obj = Book(user=user_customer, room_id=room_id,
-                                time_id=time_id, date=choose_date)
+                book_obj = Book.objects.create(user=user_customer, room_id=room_id,
+                                               time_id=time_id, date=choose_date)
+                # 有參與成員的話 加入資料庫
+                if hasmembers:
+                    book_obj.sessionMember.set(members)
+                    #print(f"session member: {book_obj.sessionMember.all()}")
                 book_list.append(book_obj)
-        print(book_list)
-        Book.objects.bulk_create(book_list)
+
+        # print(book_list)
+        # Book.objects.bulk_create(book_list)
 
     except Exception as e:
         res["state"] = False
