@@ -22,12 +22,13 @@ urlpatterns = [
 
     # path('ajax_demo1', views.ajax_demo1),
     # path('ajax_add', views.ajax_add),
-    # path('renderEdit', views.renderEdit),
-    # path('edit/', views.edit),
+    #path('renderEdit', views.renderEdit),
+    path('edit/', views.edit),
+    path('checkEdit/', views.checkEdit),
     path('book/', views.book),
     path('cancel/', views.cancel),
 
-    path("listall", views.listall),
+    path("listall/", views.listall),
     path('', views.index),
     path('index/', views.index),
     path('login/', views.login),

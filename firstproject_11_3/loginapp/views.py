@@ -5,12 +5,17 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from django.forms import Form
 from django.db.models import Q
 from loginapp.models import customer, Book, Room
 import datetime
 
 from django.core.serializers import serialize
 import json
+
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.template.loader import render_to_string
 
 # 測試用
 
@@ -40,7 +45,9 @@ def index(request):
     book_date = request.GET.get('book_date', date)
     book_list = Book.objects.filter(date=book_date)
 
-    print('book_list', book_list)
+    # 過濾日期是今天以前的刪除後臺資料
+
+    #print('book_list', book_list)
     # 自製行程表表格 再將htmls給予index.html存取
     htmls = ""
     for room in room_list:
@@ -111,6 +118,25 @@ def rigister(request):
                 cName=post_user, cEmail=post_email, cPassword=post_psw)
             customer_list.append(customer_obj)
             customer.objects.bulk_create(customer_list)
+
+            ######電子郵件內容模板:####
+
+            email_template = render_to_string(
+                'signup_success_email.html',
+                {'username': post_user}
+            )
+
+            email = EmailMessage(
+                '註冊成功通知信',  # 電子郵件標題
+                email_template,  # 電子郵件內容
+                settings.EMAIL_HOST_USER,  # 寄件者
+                [post_email]  # 收件者
+            )
+
+            email.fail_silently = False
+            email.send()
+            # #########################
+
             return redirect('/login/')  # 重新導向到登入畫面
     context = {
         'form': form
@@ -149,7 +175,7 @@ def book(request):
 
     post_data = json.loads(request.POST.get('post_data'))
     choose_date = request.POST.get("choose_date")
-    print(post_data)
+    # print(post_data)
     # 用於檢視狀態 供前端檢視 並檢查
     res = {"state": True, "msg": None}
 
@@ -158,6 +184,22 @@ def book(request):
         customers = customer.objects.all().order_by('cName')
         user_customer = customer.objects.filter(cName=request.user.username)[0]
         book_list = []
+
+        # 先將post取得的資料，以filter將所選取之會議室、時間、日期濾出符合的book資料
+        remove_book = Q()
+        for room_id, time_id_list in post_data["SELECTED"].items():
+            for time_id in time_id_list:
+                temp = Q()
+                temp.children.append(("room_id", room_id))
+                temp.children.append(("time_id", time_id))
+                temp.children.append(("date", choose_date))
+                remove_book.add(temp, "OR")
+        selectedBook = Book.objects.all().filter(remove_book)
+        # 判斷合法性
+        if selectedBook:
+            print(
+                f"selected: {selectedBook}, there are one or more books be reserved by the others people")
+            raise Exception("selected books invalid")
 
         # 過濾出使用者名單
         membersNameFilter = Q()
@@ -169,26 +211,175 @@ def book(request):
             membersNameFilter.add(temp, "OR")
         members = customers.filter(membersNameFilter)
 
-        # 判斷合法性 並 創建book class 加入後台
+        # 創建book class 加入後台
         for room_id, time_id_list in post_data["SELECTED"].items():
             for time_id in time_id_list:
                 # 房間 時間 日期 這三者 有單一性 若重複預定 會跳exception
                 book_obj = Book.objects.create(user=user_customer, room_id=room_id,
                                                time_id=time_id, date=choose_date)
+
+                # ######電子郵件內容模板:####
+                # email_template = render_to_string(
+                #     'signup_success_email.html',
+                #     {'username': post_user}
+                # )
+
+                # email = EmailMessage(
+                #     '註冊成功通知信',  # 電子郵件標題
+                #     email_template,  # 電子郵件內容
+                #     settings.EMAIL_HOST_USER,  # 寄件者
+                #     [post_email]  # 收件者
+                # )
+
+                # email.fail_silently = False
+                # email.send()
+                # # #########################
+
                 # 有參與成員的話 加入資料庫
                 if hasmembers:
                     book_obj.sessionMember.set(members)
                     #print(f"session member: {book_obj.sessionMember.all()}")
-                book_list.append(book_obj)
+                    book_list.append(book_obj)
 
         # print(book_list)
-        # Book.objects.bulk_create(book_list)
+        Book.objects.bulk_create(book_list)
 
     except Exception as e:
         res["state"] = False
         res["msg"] = str(e)
 
     return HttpResponse(json.dumps(res))
+
+
+def checkEdit(request):
+    # {'SELECTED': {'1': ['5', '7'], '3': ['4']}, 'DEL': {'2': ['9']}}
+    # 前端取得之資料 格視為 : { 'room_id1':['time_id1','time_id5'], 'room_id2':['time_id7','time_id8'],...}
+    # 房間代碼為索引值 以此索引可得該會議室被前端選取到之時間代碼清單
+
+    post_data = json.loads(request.POST.get('post_data'))
+    choose_date = request.POST.get("choose_date")
+    # 用於檢視狀態 供前端檢視 並檢查
+    res = {"state": True, "msg": None}
+
+    # 將合法選取的取消預定
+    try:
+        customers = customer.objects.all().order_by('cName')
+        user_customer = customer.objects.filter(cName=request.user.username)[0]
+        # 先將post取得的資料，以filter將所選取之會議室、時間、日期濾出符合的book資料
+        remove_book = Q()
+        for room_id, time_id_list in post_data["SELECTED"].items():
+            for time_id in time_id_list:
+                temp = Q()
+                temp.children.append(("room_id", room_id))
+                temp.children.append(("time_id", time_id))
+                temp.children.append(("date", choose_date))
+                remove_book.add(temp, "OR")
+        selectedBook = Book.objects.all().filter(remove_book)
+
+        res["msg"] = str(remove_book)
+        res["msg"] += "sucessful cancel--"
+        # 若選取到之資料 會取消到別人的預訂資料 則跳exception ，沒有則單純記下要刪除之預定資訊供debug用
+        for _book in selectedBook:
+            if _book.user.cName != request.user.username:
+                raise Exception(
+                    f"permission denield client: {request.user.username} counldn't cancel the booking by client: {_book.user.cName}")
+            else:
+                res["msg"] += f"room_id: {_book.room_id}, time_id: {_book.time_id}, date:{_book.date}; "
+
+        # //////////////////////////////////////////////////
+        # email
+        # for i in members:
+        #      mail(i.cEmail,msg)
+        # ///////////////////////////////////////////////////
+
+        # 將資料延續到edit 可繼續使用
+        # 透過django內建的session app
+        request.session['post_data'] = post_data
+        request.session['choose_date'] = choose_date
+
+    except Exception as e:
+        res["state"] = False
+        res["msg"] = str(e)
+
+    return HttpResponse(json.dumps(res))
+
+
+class editBookForm(Form):
+    meetingName = forms.CharField(
+        label="會議名稱",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    meetingInfo = forms.CharField(
+        label="會議資訊",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    memberGroup = forms.MultipleChoiceField(
+        label="參與成員",
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-control'})
+    )
+    # memberGroup = forms.MultipleChoiceField(
+    #     label="參與成員",
+    #     widget=forms.SelectMultiple(attrs={'class': 'form-control'})
+    # )
+    # def save(self):
+    #     _book = super(editBookForm, self).save(commit=False)
+    #     _book.save()
+    #     return _book
+
+
+def edit(request):
+
+    # 延用資料
+    post_data = request.session.get('post_data')
+    choose_date = request.session.get('choose_date')
+    members = customer.objects.all().order_by(
+        'cName').exclude(cName=request.user.username)
+    # print(post_data)
+    # print(choose_date)
+
+    res = {"op": "edit", "state": True, "msg": ""}
+    try:
+        # 過濾出要編輯的book
+        remove_book = Q()
+        for room_id, time_id_list in post_data["SELECTED"].items():
+            for time_id in time_id_list:
+                temp = Q()
+                temp.children.append(("room_id", room_id))
+                temp.children.append(("time_id", time_id))
+                temp.children.append(("date", choose_date))
+                remove_book.add(temp, "OR")
+        selectedBook = Book.objects.all().filter(remove_book)
+
+        editForm = editBookForm()
+        if request.method == "POST":
+            # 取得表單
+            editForm = editBookForm(request.POST)
+            if editForm.is_valid:
+
+                _meetingName = request.POST.get('meetingName')
+                _meetingInfo = request.POST.get('meetingInfo')
+                _memberGroup = request.POST.getlist('memberGroup')
+
+                # 將表單資料更新至選取的book
+                for _book in selectedBook:
+                    _book.meetingName = _meetingName
+                    _book.meetingInfo = _meetingInfo
+                    _book.sessionMember.set(_memberGroup)
+                    _book.save()
+                    res["msg"] += f"book host: {_book.user.cName},book time: {_book.time_id}, book room: {_book.room},\n meeting name: { _book.meetingName},\n meetingInfo: {_book.meetingInfo}"
+                print(
+                    f"op: {res['op']}, state: {res['state']}, msg: {res['msg'] }")
+                return redirect("/index/")
+            else:
+                raise Exception("form is not valid")
+
+    except Exception as e:
+        res["state"] = False
+        res["msg"] = str(e)
+
+    print(f"op: {res['op']}; state: {res['state']}; msg: {res['msg'] }")
+    return render(request, "edit.html", locals())
 
 
 def cancel(request):
@@ -228,6 +419,11 @@ def cancel(request):
                 res["msg"] += f"room_id: {_book.room_id}, time_id: {_book.time_id}, date:{_book.date}; "
 
         _del.delete()
+        # //////////////////////////////////////////////////
+        # email
+        # for i in members:
+        #      mail(i.cEmail,msg)
+        # ///////////////////////////////////////////////////
 
     except Exception as e:
         res["state"] = False

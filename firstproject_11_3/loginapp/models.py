@@ -25,6 +25,8 @@ class customer(models.Model):
 class Book(models.Model):
     user = models.ForeignKey("customer", on_delete=models.CASCADE)
     room = models.ForeignKey("Room", on_delete=models.CASCADE)
+    meetingName = models.CharField(max_length=20, null=True)
+    meetingInfo = models.CharField(max_length=500, null=True)
     date = models.DateField()
     sessionMember = models.ManyToManyField(
         customer, blank=True, related_name='members')

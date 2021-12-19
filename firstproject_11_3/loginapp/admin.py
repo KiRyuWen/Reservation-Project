@@ -30,7 +30,7 @@ class customerAdmin(admin.ModelAdmin):
 
 
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('user', 'room', 'date', 'time_id')
+    list_display = ('user', 'room', 'date', 'time_id', 'meetingName')
     filter_horizontal = ('sessionMember',)
 
 

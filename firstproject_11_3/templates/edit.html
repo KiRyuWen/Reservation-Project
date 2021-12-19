@@ -15,9 +15,9 @@
 
 <body>
     <div id="container">
-        <button id="">X</button>
+        <button class="btn btn-success  back">X</button>
         <div class="tab"></div>
-        <select name="rooms">
+        <!-- <select name="rooms">
             <option value="" selected disabled>選擇房間</option>
             <option value="room1">room1</option>
             <option value="room2">room2</option>
@@ -34,20 +34,25 @@
             <option value="meeting4">meeting4</option>
             <option value="meeting5">meeting5</option>
             <option value="meeting6">meeting6</option>
-        </select>
+        </select> -->
         <form action="" method="post">
             <label>會議名稱</label>
-            <div class="tab"></div>
             <input type="text" id="meetingName" name="meetingName" placeholder="會議名稱"><br />
             <div class="tab"></div>
             <label>會議資訊</label>
             <div class="tab"></div>
             <textarea id="meetingInfo" name="meetingInfo" rows="8" cols="40" placeholder="會議資訊">
 </textarea>
+
             <div class="tab"></div>
             <label>參與成員</label>
             <div class="tab"></div>
-            <div id="memberGroup">
+            <!-- <select multiple>...</select> -->
+            {% for member in members %}
+                <input type="checkbox"  name="memberGroup" value="{{member.id}}"/> {{member}}
+                <div class="tab"></div>
+            {% endfor %}
+            </select>
 
             </div>
             <!-- <select name="members" id="member">
@@ -59,17 +64,52 @@
             <div class="tab"></div>
             <input type="submit" value="刪除" class="delete">
             <input type="submit" value="儲存" class="save">
+            <div class="memberGroup"></div>
         </form>
 
     </div>
 
     <script type="text/javascript">
         $.post({
-            url: '/renderEdit',
+            url: '/index/',
         }, function (data) {
             console.log(data)
         });
+        $('.back').click(function () {
+            $.post({
+                url: '/edit/',
+                success: function (data) {
+                    location.href = '/index/'
+                }
+            });
+        });
+        $.post({
+            url: '/listall/',
+        }, function (data) {
 
+            console.log(typeof (data))
+            console.log(data);
+            const users = data.users
+            let memberGroup = document.getElementById('memberGroup');
+            let b = document.createElement('br');
+            memberGroup.appendChild(b);
+            for (userName of users) {
+                let input = document.createElement('input');
+                input.classList.add('user');
+                input.type = "checkbox";
+                input.id = userName;
+                input.name = userName;
+                input.value = userName;
+                let label = document.createElement('label');
+                label.setAttribute('for', userName);
+                label.append(userName)
+                memberGroup.appendChild(input);
+                memberGroup.appendChild(label);
+                let br = document.createElement('br');
+                memberGroup.appendChild(br);
+            }
+        }
+        );
 
     </script>
 </body>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit</title>
+    <script src="../static/js/jquery-1.12.4.min.js"></script>
+    <script src="../static/js/jquery.cookie.js"></script>
+
+    <link rel="stylesheet" href="../static/edit.css">
+
+</head>
+
+<body>
+    <div id="container">
+        <button class="btn btn-success  back">X</button>
+        <div class="tab"></div>
+        <form action="" method="post">
+            <label>會議名稱</label>
+            <div class="tab"></div>
+            <input type="text" id="meetingName" name="meetingName" placeholder="會議名稱"><br />
+            <div class="tab"></div>
+            <label>會議資訊</label>
+            <div class="tab"></div>
+            <textarea id="meetingInfo" name="meetingInfo" rows="8" cols="40" placeholder="會議資訊">
+</textarea>
+            <div class="tab"></div>
+            <label>參與成員</label>
+            <div class="tab"></div>
+            <div id="memberGroup">
+
+            </div>
+            <!-- <select name="members" id="member">
+                <option value="" selected disabled>查看所有成員</option>
+                <option value="meeting1" disabled selected>Amy</option>
+                <option value="meeting2" disabled>John</option>
+                <option value="meeting3" disabled>Cindy</option>
+            </select> -->
+            <div class="tab"></div>
+            <input type="submit" value="儲存更改" class="save">
+            <footer class="card-footer">
+            </footer>
+        </form>
+
+    </div>
+
+    <script type="text/javascript">
+        $.post({
+            url: '/index/',
+            //url: '/renderEdit',
+        }, function (data) {
+            console.log(data)
+        });
+
+        $('.back').click(function () {
+            $.post({
+                url: '/edit/',
+                success: function (data) {
+                    location.href = '/index/'
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>

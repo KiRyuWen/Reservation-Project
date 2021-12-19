@@ -69,8 +69,9 @@
 
                 </div>
                 <!-- <a href="/edit/">編輯</a> -->
-                <button class="btn btn-success  keep">保存</button>
-                <button class="btn btn-warning cancel">刪除</button>
+                <button class="btn btn-success  keep">預定會議</button>
+                <button class="btn btn-success  edit">編輯會議</button>
+                <button class="btn btn-warning cancel">刪除會議</button>
             </div>
             <div class="col-lg-9 ">
                 <table class="table table-bordered ">
@@ -122,7 +123,7 @@
         };
 
         $.post({
-            url: '/listall',
+            url: '/listall/',
         }, function (data) {
 
             console.log(typeof (data))
@@ -248,7 +249,7 @@
                         //预訂成功
                         location.href = ''
                     } else {
-                        alert('您所選擇預定的房间已經其他人被預訂囉');
+                        alert('您所選擇預定的房間已經其他人被預訂囉');
                         location.href = ""
                     }
                 }
@@ -256,7 +257,33 @@
             })
         });
 
-        //刪除預定 ajax
+        //編輯會議 ajax
+        $('.edit').click(function () {
+            $.ajax({
+                url: '/checkEdit/',
+                type: 'post',
+                headers: { "X-CSRFToken": $.cookie('csrftoken') },
+                data: {
+                    choose_date: CHOOSE_DATE,
+                    post_data: JSON.stringify(POST_DATA)
+                },
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                    console.log("Enter edit")
+                    if (data.state) {
+                        //预訂成功
+                        location.href = '/edit/'
+                    } else {
+                        alert('權限不足，非預定房間的host不得編輯會議資訊');
+                        location.href = ""
+                    }
+                }
+
+            })
+        });
+
+        //刪除會議 ajax
         $('.cancel').click(function () {
             $.ajax({
                 url: '/cancel/',
@@ -269,7 +296,7 @@
                 dataType: "json",
                 success: function (data) {
                     console.log(data);
-                    console.log("Enter book")
+                    console.log("Enter cancel")
                     if (data.state) {
                         //预訂成功
                         location.href = ''
@@ -281,6 +308,8 @@
 
             })
         });
+
+       
         // 日曆插件
         $('#datetimepicker11').datetimepicker({
             minView: "month",
