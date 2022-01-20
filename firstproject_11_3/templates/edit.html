@@ -49,22 +49,24 @@
             <div class="tab"></div>
             <!-- <select multiple>...</select> -->
             {% for member in members %}
-                <input type="checkbox"  name="memberGroup" value="{{member.id}}"/> {{member}}
-                <div class="tab"></div>
+            <input type="checkbox" name="memberGroup" value="{{member.id}}" /> {{member}}
+            <div class="tab"></div>
             {% endfor %}
             </select>
-
-            </div>
-            <!-- <select name="members" id="member">
+            <div class="tab"></div>
+            <input type="submit" value="刪除" class="delete">
+            <input type="submit" value="儲存" class="save">
+    </div>
+    </div>
+    <!-- <select name="members" id="member">
                 <option value="" selected disabled>查看所有成員</option>
                 <option value="meeting1" disabled selected>Amy</option>
                 <option value="meeting2" disabled>John</option>
                 <option value="meeting3" disabled>Cindy</option>
             </select> -->
-            <div class="tab"></div>
-            <input type="submit" value="刪除" class="delete">
-            <input type="submit" value="儲存" class="save">
-            <div class="memberGroup"></div>
+
+    <div class="memberGroup">
+
         </form>
 
     </div>
