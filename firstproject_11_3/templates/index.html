@@ -31,7 +31,23 @@
             }
 
             .td_active {
-                background-color: lightblue;
+                background-color: lightblue !important;
+            }
+
+            .myRoom {
+                background-color: rgb(233, 103, 103);
+                color: black;
+            }
+
+            .host {
+                background-color: rgb(70, 155, 80);
+                color: black;
+            }
+
+            .colorBlock {
+                width: 30px;
+                height: 30px;
+                display: inline-block;
             }
         </style>
     </head>
@@ -55,6 +71,21 @@
     <a href="/register/">註冊</a>
     {% endif %}
     <span style="color:red">{{message}}</span>
+
+    <div style="display: flex; justify-content: space-around;">
+        <span>
+            <div class="col-3 colorBlock" style="background-color: rgb(70, 155, 80);"></div>
+            <span>This means you are host</span>
+        </span>
+        <span>
+            <div class="col-6 colorBlock" style="background-color: rgb(233, 103, 103);"></div>
+            <span>This means you are inside the room too</span>
+        </span>
+        <span>
+            <div class="col-3 colorBlock" style="background-color: #336699;"></div>
+            <span>This means you're not inside the room</span>
+        </span>
+    </div>
 
 
 
@@ -104,6 +135,8 @@
     </section>
 
     <script type="text/javascript">
+
+
 
         // 日期格式化方法
         Date.prototype.yuan = function (fmt) { //author: meizz
@@ -309,7 +342,7 @@
             })
         });
 
-       
+
         // 日曆插件
         $('#datetimepicker11').datetimepicker({
             minView: "month",

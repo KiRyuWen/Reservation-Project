@@ -78,19 +78,7 @@ def listInvited(request):
 
     for i in tosend:
         print(tosend[i])
-    # tosend.append(o)
-    # for obj in anotherBooks:
-    #     o["host"] = str(obj.user.cName)
-    #     o["room"] = str(obj.room.rName)
-    #     o["meetingName"] = str(obj.meetingName)
-    #     o["meetingInfo"] = str(obj.meetingInfo)
-    #     o["date"] = str(obj.date)
-    #     o["time_choice"] = str(obj.time_choice[obj.time_id][1])
-    #     tosend[f"{count}"] = o
-    #     count = count + 1
-    # tosend.append(o)
 
-    # return render(request, "listInvited.html", locals())
     return JsonResponse(tosend)
 
 
@@ -122,11 +110,20 @@ def index(request):
 
             if flag:
                 if request.user.pk == book.user.pk:
-                    htmls += "<td class='active item' room_id=" + str(room.room_id) + " time_id=" + str(
+                    htmls += "<td class='host item' room_id=" + str(room.room_id) + " time_id=" + str(
                         time[0]) + ">" + book.user.cName + "</td>"
                 else:
-                    htmls += "<td class='another_active item' room_id=" + str(room.room_id) + " time_id=" + str(
+                    isIncluded = book.is_beincluded(name)
+                    print(isIncluded)
+                    if name and (book.user.cName==name):
+                        htmls += "<td class='host item' room_id=" + str(room.room_id) + " time_id=" + str(
                         time[0]) + ">" + book.user.cName + "</td>"
+                    elif name and isIncluded:
+                        htmls += "<td class='myRoom item' room_id=" + str(room.room_id) + " time_id=" + str(
+                        time[0]) + ">" + book.user.cName + "</td>"
+                    else:
+                        htmls += "<td class='another_active item' room_id=" + str(room.room_id) + " time_id=" + str(
+                            time[0]) + ">" + book.user.cName + "</td>"
             else:
                 htmls += "<td class='item' room_id=" + \
                     str(room.room_id) + " time_id=" + str(time[0]) + "></td>"

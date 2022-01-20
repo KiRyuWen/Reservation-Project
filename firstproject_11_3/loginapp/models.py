@@ -58,3 +58,9 @@ class Book(models.Model):
         unique_together = (
             ('room', 'date', 'time_id'),
         )
+    def is_beincluded(self,_username):
+        for x in self.sessionMember.all():
+            if _username==x.cName:
+                return True
+            
+        return False
