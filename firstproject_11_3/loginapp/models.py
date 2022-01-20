@@ -27,6 +27,7 @@ class Book(models.Model):
     room = models.ForeignKey("Room", on_delete=models.CASCADE)
     meetingName = models.CharField(max_length=20, null=True)
     meetingInfo = models.CharField(max_length=500, null=True)
+
     date = models.DateField()
     sessionMember = models.ManyToManyField(
         customer, blank=True, related_name='members')
@@ -46,6 +47,12 @@ class Book(models.Model):
         (13, '20:00'),
     )
     time_id = models.IntegerField(choices=time_choice)
+
+    def __str__(self):
+        return (f"{self.user.cName}, {self.room.rName}, {self.date}, {self.time_choice[self.time_id-1][1]}")
+
+    def get_sessionMembers(self):
+        return {x for x in self.sessionMember.all()}
 
     class Meta:
         unique_together = (

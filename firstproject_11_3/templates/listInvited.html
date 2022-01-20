@@ -1,0 +1,20 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>顯示所有會員會議資料</title>
+    </head>
+    <body>
+        <h2>顯示 參與會議資料 </h2>
+        <table border="1" cellpadding="0" cellspacing="0">
+            <th>date</th><th>time_choice</th>
+            {% load hello_extras %}
+            {% for _data in hostBooks %}
+            <tr>
+                <td>{{ _data|help_text:"user" }}： {{ _data.user.cName }}</td>
+                <td>{{ _data|help_text:"time_choice" }}： {{ _data.time_choice[_data.time_id]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

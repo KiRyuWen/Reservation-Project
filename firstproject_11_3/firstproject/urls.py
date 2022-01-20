@@ -28,6 +28,9 @@ urlpatterns = [
     path('book/', views.book),
     path('cancel/', views.cancel),
 
+    path("test/", views.test),
+    
+    path("listInvited/", views.listInvited),
     path("listall/", views.listall),
     path('', views.index),
     path('index/', views.index),

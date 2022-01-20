@@ -1,3 +1,4 @@
+from typing import ContextManager
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate
 from django.contrib import auth
@@ -5,7 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from django.forms import Form
+from django.forms import Form, models
 from django.db.models import Q
 from loginapp.models import customer, Book, Room
 import datetime
@@ -17,7 +18,21 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from django.template.loader import render_to_string
 
+
 # 測試用
+def test(request):
+    customers = customer.objects.all().order_by(
+        'cName').exclude(cName=request.user.username)
+    c = []
+
+    for obj in customers:
+        c.append(obj.cName)
+
+    toSend = {
+        "users": c
+    }
+    return render(request, "listall.html", locals())
+    # return JsonResponse(toSend)
 
 
 def listall(request):
@@ -33,6 +48,50 @@ def listall(request):
     }
     # return render(request, "listall.html", locals())
     return JsonResponse(toSend)
+
+
+def listInvited(request):
+    # 過濾出使用者名單
+    user_customer = customer.objects.filter(cName=request.user.username)[0]
+    hostBooks = Book.objects.filter(user=user_customer.id)
+    anotherBooks = Book.objects.filter(sessionMember=user_customer)
+
+    tosend = {}
+    for obj in hostBooks:
+        tosend[obj.id] = {}
+        tosend[obj.id]['host'] = str(obj.user)
+        tosend[obj.id]['room'] = str(obj.room)
+        tosend[obj.id]['date'] = str(obj.date)
+        tosend[obj.id]['time_choice'] = str(
+            obj.time_choice[int(obj.time_id)-1][1])
+        tosend[obj.id]['meetingName'] = str(obj.meetingName)
+        tosend[obj.id]['meetingInfo'] = str(obj.meetingInfo)
+    for obj in anotherBooks:
+        tosend[obj.id] = {}
+        tosend[obj.id]['host'] = str(obj.user)
+        tosend[obj.id]['room'] = str(obj.room)
+        tosend[obj.id]['date'] = str(obj.date)
+        tosend[obj.id]['time_choice'] = str(
+            obj.time_choice[int(obj.time_id)-1][1])
+        tosend[obj.id]['meetingName'] = str(obj.meetingName)
+        tosend[obj.id]['meetingInfo'] = str(obj.meetingInfo)
+
+    for i in tosend:
+        print(tosend[i])
+    # tosend.append(o)
+    # for obj in anotherBooks:
+    #     o["host"] = str(obj.user.cName)
+    #     o["room"] = str(obj.room.rName)
+    #     o["meetingName"] = str(obj.meetingName)
+    #     o["meetingInfo"] = str(obj.meetingInfo)
+    #     o["date"] = str(obj.date)
+    #     o["time_choice"] = str(obj.time_choice[obj.time_id][1])
+    #     tosend[f"{count}"] = o
+    #     count = count + 1
+    # tosend.append(o)
+
+    # return render(request, "listInvited.html", locals())
+    return JsonResponse(tosend)
 
 
 def index(request):
@@ -133,8 +192,8 @@ def rigister(request):
                 [post_email]  # 收件者
             )
 
-            email.fail_silently = False
-            email.send()
+            # email.fail_silently = False
+            # email.send()
             # #########################
 
             return redirect('/login/')  # 重新導向到登入畫面
@@ -181,9 +240,6 @@ def book(request):
 
     # 添加预訂
     try:
-        customers = customer.objects.all().order_by('cName')
-        user_customer = customer.objects.filter(cName=request.user.username)[0]
-        book_list = []
 
         # 先將post取得的資料，以filter將所選取之會議室、時間、日期濾出符合的book資料
         remove_book = Q()
@@ -195,6 +251,7 @@ def book(request):
                 temp.children.append(("date", choose_date))
                 remove_book.add(temp, "OR")
         selectedBook = Book.objects.all().filter(remove_book)
+
         # 判斷合法性
         if selectedBook:
             print(
@@ -202,6 +259,7 @@ def book(request):
             raise Exception("selected books invalid")
 
         # 過濾出使用者名單
+        customers = customer.objects.all().order_by('cName')
         membersNameFilter = Q()
         hasmembers = False
         for _name in post_data["MEMBERS"]:
@@ -212,43 +270,98 @@ def book(request):
         members = customers.filter(membersNameFilter)
 
         # 創建book class 加入後台
+        book_list = []
+        user_customer = customer.objects.filter(cName=request.user.username)[0]
         for room_id, time_id_list in post_data["SELECTED"].items():
             for time_id in time_id_list:
                 # 房間 時間 日期 這三者 有單一性 若重複預定 會跳exception
                 book_obj = Book.objects.create(user=user_customer, room_id=room_id,
                                                time_id=time_id, date=choose_date)
-
-                # ######電子郵件內容模板:####
-                # email_template = render_to_string(
-                #     'signup_success_email.html',
-                #     {'username': post_user}
-                # )
-
-                # email = EmailMessage(
-                #     '註冊成功通知信',  # 電子郵件標題
-                #     email_template,  # 電子郵件內容
-                #     settings.EMAIL_HOST_USER,  # 寄件者
-                #     [post_email]  # 收件者
-                # )
-
-                # email.fail_silently = False
-                # email.send()
-                # # #########################
+                book_list.append(book_obj)
 
                 # 有參與成員的話 加入資料庫
                 if hasmembers:
                     book_obj.sessionMember.set(members)
                     #print(f"session member: {book_obj.sessionMember.all()}")
-                    book_list.append(book_obj)
 
-        # print(book_list)
-        Book.objects.bulk_create(book_list)
+        #v ###### ###### ######    電子郵件內容模板:   ###### ###### ###### ###### ######
+        print("sucessful reserveation go to mail section")
+
+        for _book in book_list:
+            # _msg = ""
+            print(f"\n{ user_customer.cName } 您好:")
+            print(f"host: { user_customer.cName } 預約會議成功 ，請前往查看!!")
+            print(f"meeting room: {_book.room.rName}")
+            print(f"time: { _book.time_choice[int(_book.time_id)-1][1] }")
+            print(f"meetint name: {  _book.meetingName }")
+            print(f"meeting info: { _book.meetingInfo }\n")
+
+            _hostname = str(user_customer.cName)
+            _roomName = str(_book.room.rName)
+            _timeslot = str(_book.time_choice[int(_book.time_id)-1][1])
+            _meetingName = str(_book.meetingName)
+            _meetingInfo = str(_book.meetingInfo)
+
+            #  先寄給host
+            email_template = render_to_string(
+                'meeting_notification.html',
+                {'username': str(user_customer.cName),
+                 'hostname': _hostname,
+                 'roomName': _roomName,
+                 'timeslot': _timeslot,
+                 'meetingName': _meetingName,
+                 'meetingInfo': _meetingInfo}
+            )
+
+            email = EmailMessage(
+                '預定成功通知信',  # 電子郵件標題
+                email_template,  # 電子郵件內容
+                settings.EMAIL_HOST_USER,  # 寄件者
+                [user_customer.cEmail]  # 收件者
+            )
+
+            # email.fail_silently = False
+            # email.send()
+            # /////////////////////////////////
+
+            # # 逐一寄給予會嘉賓
+            for _member in members:
+
+                email_template = render_to_string(
+                    'meeting_notification.html',
+                    {'username': str(_member.cName),
+                     'hostname': _hostname,
+                     'roomName': _roomName,
+                     'timeslot': _timeslot,
+                     'meetingName': _meetingName,
+                     'meetingInfo': _meetingInfo}
+                )
+                print(f"\n{ _member.cName } 您好:")
+                print(f"host: { user_customer.cName } 預約會議成功 ，請前往查看!!")
+                print(f"meeting room: {_book.room.rName}")
+                print(f"time: { _book.time_choice[int(_book.time_id)-1][1] }")
+                print(f"meetint name: {  _book.meetingName }")
+                print(f"meeting info: { _book.meetingInfo }\n")
+
+                email = EmailMessage(
+                    '註冊成功通知信',  # 電子郵件標題
+                    email_template,  # 電子郵件內容
+                    settings.EMAIL_HOST_USER,  # 寄件者
+                    [_member.cEmail]  # 收件者
+                )
+
+                # email.fail_silently = False
+                # email.send()
+            # /////////////////////////////////
+        #############################################################################################
 
     except Exception as e:
         res["state"] = False
         res["msg"] = str(e)
+        print(res["msg"])
 
     return HttpResponse(json.dumps(res))
+    # return render(request, "meeting_notification.html", msgs)
 
 
 def checkEdit(request):
@@ -368,8 +481,84 @@ def edit(request):
                     _book.sessionMember.set(_memberGroup)
                     _book.save()
                     res["msg"] += f"book host: {_book.user.cName},book time: {_book.time_id}, book room: {_book.room},\n meeting name: { _book.meetingName},\n meetingInfo: {_book.meetingInfo}"
+
+                #v ###### ###### ######    電子郵件內容模板:   ###### ###### ###### ###### ######
+                user_customer = customer.objects.filter(
+                    cName=request.user.username)[0]
+                print("sucessful reserveation go to mail section")
+                for _book in selectedBook:
+                    # _msg = ""
+                    print(f"\n{ user_customer.cName } 您好:")
+                    print(f"host: { user_customer.cName } 已編輯會議資訊 ，如下所示!!!!")
+                    print(f"meeting room: {_book.room.rName}")
+                    print(
+                        f"time: { _book.time_choice[int(_book.time_id)-1][1] }")
+                    print(f"meetint name: {  _book.meetingName }")
+                    print(f"meeting info: { _book.meetingInfo }\n")
+
+                    _hostname = str(user_customer.cName)
+                    _roomName = str(_book.room.rName)
+                    _timeslot = str(_book.time_choice[int(_book.time_id)-1][1])
+                    _meetingName = str(_book.meetingName)
+                    _meetingInfo = str(_book.meetingInfo)
+
+                    #  先寄給host
+                    email_template = render_to_string(
+                        'edit_meeting_notification.html',
+                        {'username': str(user_customer.cName),
+                         'hostname': _hostname,
+                         'roomName': _roomName,
+                         'timeslot': _timeslot,
+                         'meetingName': _meetingName,
+                         'meetingInfo': _meetingInfo}
+                    )
+
+                    email = EmailMessage(
+                        '編輯會議通知信',  # 電子郵件標題
+                        email_template,  # 電子郵件內容
+                        settings.EMAIL_HOST_USER,  # 寄件者
+                        [user_customer.cEmail]  # 收件者
+                    )
+
+                    # email.fail_silently = False
+                    # email.send()
+                    # /////////////////////////////////
+
+                    # # 逐一寄給予會嘉賓
+                    members = _book.get_sessionMembers()
+                    print(members)
+                    for _member in members:
+                        email_template = render_to_string(
+                            'edit_meeting_notification.html',
+                            {'username': str(_member.cName),
+                             'hostname': _hostname,
+                             'roomName': _roomName,
+                             'timeslot': _timeslot,
+                             'meetingName': _meetingName,
+                             'meetingInfo': _meetingInfo}
+                        )
+                        print(f"\n{ _member.cName } 您好:")
+                        print(f"host: { user_customer.cName } 已編輯會議資訊 ，如下所示!!")
+                        print(f"meeting room: {_book.room.rName}")
+                        print(
+                            f"time: { _book.time_choice[int(_book.time_id)-1][1] }")
+                        print(f"meetint name: {  _book.meetingName }")
+                        print(f"meeting info: { _book.meetingInfo }\n")
+
+                        email = EmailMessage(
+                            '取消預定通知信',  # 電子郵件標題
+                            email_template,  # 電子郵件內容
+                            settings.EMAIL_HOST_USER,  # 寄件者
+                            [_member.cEmail]  # 收件者
+                        )
+
+                        # email.fail_silently = False
+                        # email.send()
+                    # /////////////////////////////////
+                #############################################################################################
+
                 print(
-                    f"op: {res['op']}, state: {res['state']}, msg: {res['msg'] }")
+                    f"op: {res['op']}, state: {res['state']}, msg: \n{res['msg'] }")
                 return redirect("/index/")
             else:
                 raise Exception("form is not valid")
@@ -378,7 +567,7 @@ def edit(request):
         res["state"] = False
         res["msg"] = str(e)
 
-    print(f"op: {res['op']}; state: {res['state']}; msg: {res['msg'] }")
+    print(f"op: {res['op']}; state: {res['state']}; msg: \n{res['msg'] }")
     return render(request, "edit.html", locals())
 
 
@@ -418,15 +607,81 @@ def cancel(request):
             else:
                 res["msg"] += f"room_id: {_book.room_id}, time_id: {_book.time_id}, date:{_book.date}; "
 
+        #v ###### ###### ######    電子郵件內容模板:   ###### ###### ###### ###### ######
+        print("sucessful reserveation go to mail section")
+        for _book in _del:
+            # _msg = ""
+            print(f"\n{ user_customer.cName } 您好:")
+            print(f"host: { user_customer.cName } 已取消會議預約 ，請前往查看!!!!")
+            print(f"meeting room: {_book.room.rName}")
+            print(f"time: { _book.time_choice[int(_book.time_id)-1][1] }")
+            print(f"meetint name: {  _book.meetingName }")
+            print(f"meeting info: { _book.meetingInfo }\n")
+
+            _hostname = str(user_customer.cName)
+            _roomName = str(_book.room.rName)
+            _timeslot = str(_book.time_choice[int(_book.time_id)-1][1])
+            _meetingName = str(_book.meetingName)
+            _meetingInfo = str(_book.meetingInfo)
+
+            #  先寄給host
+            email_template = render_to_string(
+                'cancal_meeting_notification.html',
+                {'username': str(user_customer.cName),
+                 'hostname': _hostname,
+                 'roomName': _roomName,
+                 'timeslot': _timeslot,
+                 'meetingName': _meetingName,
+                 'meetingInfo': _meetingInfo}
+            )
+
+            email = EmailMessage(
+                '取消預定通知信',  # 電子郵件標題
+                email_template,  # 電子郵件內容
+                settings.EMAIL_HOST_USER,  # 寄件者
+                [user_customer.cEmail]  # 收件者
+            )
+
+            # email.fail_silently = False
+            # email.send()
+            # /////////////////////////////////
+
+            # # 逐一寄給予會嘉賓
+            members = _book.get_sessionMembers()
+            print(members)
+            for _member in members:
+                email_template = render_to_string(
+                    'cancal_meeting_notification.html',
+                    {'username': str(_member.cName),
+                     'hostname': _hostname,
+                     'roomName': _roomName,
+                     'timeslot': _timeslot,
+                     'meetingName': _meetingName,
+                     'meetingInfo': _meetingInfo}
+                )
+                print(f"\n{ _member.cName } 您好:")
+                print(f"host: { user_customer.cName } 已取消會議預約 ，請前往查看!!!!")
+                print(f"meeting room: {_book.room.rName}")
+                print(f"time: { _book.time_choice[int(_book.time_id)-1][1] }")
+                print(f"meetint name: {  _book.meetingName }")
+                print(f"meeting info: { _book.meetingInfo }\n")
+
+                email = EmailMessage(
+                    '取消預定通知信',  # 電子郵件標題
+                    email_template,  # 電子郵件內容
+                    settings.EMAIL_HOST_USER,  # 寄件者
+                    [_member.cEmail]  # 收件者
+                )
+
+                # email.fail_silently = False
+                # email.send()
+            # /////////////////////////////////
+        #############################################################################################
         _del.delete()
-        # //////////////////////////////////////////////////
-        # email
-        # for i in members:
-        #      mail(i.cEmail,msg)
-        # ///////////////////////////////////////////////////
 
     except Exception as e:
         res["state"] = False
         res["msg"] = str(e)
+        print(res["msg"])
 
     return HttpResponse(json.dumps(res))
