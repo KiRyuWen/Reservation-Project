@@ -235,8 +235,8 @@ def notificationByEmail(tmplateStr, recipients, specificBook):
             [rep.cEmail]  # 收件者
         )
 
-        # email.fail_silently = False
-        # email.send()
+        email.fail_silently = False
+        email.send()
 
 
 # 註冊表單
