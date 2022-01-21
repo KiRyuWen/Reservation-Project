@@ -16,8 +16,11 @@
         <script src="../static/js/jquery.cookie.js"></script>
         <script src="../static/datetimepicker/bootstrap-datetimepicker.min.js"></script>
         <script src="../static/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
-
+        <script></script>
         <link rel="stylesheet" href="../static/myIndex.css">
+        <link rel="stylesheet" href="../static/datetimepicker/bootstrap-datetimepicker.min.css">
+
+        <script src="../static/bootstrap-datepicker-master/js/bootstrap-datepicker.js"></script>
 
         <style type="text/css">
             .active {
@@ -27,6 +30,11 @@
 
             .another_active {
                 background-color: #336699;
+                color: white;
+            }
+
+            .calendar_selected {
+                background-color: green;
                 color: white;
             }
 
@@ -94,6 +102,7 @@
         <div class="row align-items-center">
             <div id="memberGroup" class="col-lg-3 align-self-start">
                 <div class="calender">
+
 
                     <div id="datetimepicker11"></div>
 
@@ -360,7 +369,36 @@
             location.href = "/index/?book_date=" + CHOOSE_DATE;
         }
 
+        function filter_calendar() {
+            let day = CHOOSE_DATE.charAt(CHOOSE_DATE.length - 2) + CHOOSE_DATE.charAt(CHOOSE_DATE.length - 1)
 
+            let calender_td = document.getElementsByClassName("day")
+
+            for (let i = 0; i < calender_td.length; ++i) {
+                let result = calender_td[i].className;
+                if (result.indexOf('disable') == -1) {
+                    let inText = calender_td[i].innerText;
+                    if (inText.length == 1) {
+                        inText = '0' + inText
+                    }
+                    if (inText == day) {
+                        let toInactive = document.getElementsByClassName("active")
+                        for (let i = 0; i < toInactive.length; ++i) {
+                            if (toInactive[i].className.indexOf('day') != -1) {
+                                toInactive = toInactive[i];
+                                break;
+                            }
+                        }
+                        toInactive.classList.remove('active')
+                        calender_td[i].classList.add('calendar_selected');
+                        break
+                    }
+                }
+            }
+
+            //           console.log(CHOOSE_DATE.charAt(CHOOSE_DATE.length - 2) + CHOOSE_DATE.charAt(CHOOSE_DATE.length - 1))
+        }
+        filter_calendar();
     </script>
     {% block top%}
     <script>
